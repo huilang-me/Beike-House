@@ -15,7 +15,7 @@
       </el-select>
       <el-button type="primary" round @click="compare">对比</el-button>
     </div>
-    <el-table :data="compareResult.length==0 ?table:compareResult" stripe style="width: 100%" :default-sort="{ prop: 'total', order: 'ascending' }">
+    <el-table :data="compareResult.length==0 ?table.filter(data => (!search || data.desc.includes(search)) && (!tag || data.tags.includes(tag))):compareResult.filter(data => !search || data.desc.includes(search))" stripe style="width: 100%" :default-sort="{ prop: 'total', order: 'ascending' }">
       <el-table-column prop="id" sortable label="编号" width="70" />
       <el-table-column label="图片" width="60">
         <template #default="scope">
@@ -23,8 +23,26 @@
         </template>
       </el-table-column>
       <el-table-column prop="title" label="标题"/>
-      <el-table-column prop="desc" label="描述" />
-      <el-table-column prop="tags" label="标签" />
+      <el-table-column>
+        <template #header>
+          <el-select v-model="search" placeholder="搜索" filterable clearable allow-create>
+            <el-option v-for="item in searchDropdown" :key="item" :value="item"/>
+          </el-select>
+        </template>
+        <template #default="scope">
+          {{ scope.row.desc }}
+        </template>
+      </el-table-column>
+      <el-table-column>
+        <template #header>
+          <el-select v-model="tag" placeholder="搜索" filterable clearable allow-create>
+            <el-option v-for="item in tagDropdown" :key="item" :value="item"/>
+          </el-select>
+        </template>
+        <template #default="scope">
+          {{ scope.row.tags }}
+        </template>
+      </el-table-column>
       <el-table-column sortable prop="total" label="总价" width="65">
         <template #default="scope">
           <span :class="typeof scope.row.class == 'string' ? scope.row.class: ''">{{ scope.row.total }}</span>
@@ -47,6 +65,10 @@ export default {
       file: '',
       file2: '',
       files: [],
+      search: '',
+      searchDropdown: ['2室', "3室", "东", "南", "西", "北"],
+      tag: '',
+      tagDropdown: ['满两年','满五年'],
       area: 'zhishicheng',
       compareResult: []
     }
@@ -80,6 +102,7 @@ export default {
       });
     },
     fileChange(data) {
+      this.search = ''
       document.title = data
       const $this = this
       this.compareResult = []
@@ -178,8 +201,8 @@ body{
 .el-table{
   font-size: inherit;
 }
-.el-select{
-  width: 40%;
+.compare .el-select{
+  width: 30%;
 }
 .el-button.is-round{
   height: 40px;
